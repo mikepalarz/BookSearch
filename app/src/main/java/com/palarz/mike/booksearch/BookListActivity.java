@@ -5,8 +5,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ListView;
 import android.support.v7.widget.SearchView;
+import android.widget.ProgressBar;
 
 import com.loopj.android.http.JsonHttpResponseHandler;
 
@@ -23,6 +25,7 @@ public class BookListActivity extends AppCompatActivity {
     private ListView mBookList;
     private BookAdapter mAdapter;
     private BookClient mClient;
+    private ProgressBar mProgressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,9 +37,12 @@ public class BookListActivity extends AppCompatActivity {
         mAdapter = new BookAdapter(this, books);
         mBookList.setAdapter(mAdapter);
 
+        mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
     }
 
     private void fetchBooks(String query) {
+        mProgressBar.setVisibility(ProgressBar.VISIBLE);
+
         mClient = new BookClient();
         mClient.getBooks(query, new JsonHttpResponseHandler() {
             @Override
@@ -51,10 +57,16 @@ public class BookListActivity extends AppCompatActivity {
                             mAdapter.add(book);
                         }
                         mAdapter.notifyDataSetChanged();
+                        mProgressBar.setVisibility(ProgressBar.GONE);
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
+                mProgressBar.setVisibility(ProgressBar.GONE);
             }
         });
     }
