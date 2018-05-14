@@ -3,24 +3,25 @@ package com.palarz.mike.booksearch;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.ListView;
 import android.support.v7.widget.SearchView;
 import android.widget.ProgressBar;
 
-import com.loopj.android.http.JsonHttpResponseHandler;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
+import java.util.List;
 
-import cz.msebera.android.httpclient.Header;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class BookListActivity extends AppCompatActivity {
+
+    private static final String TAG = BookListActivity.class.getSimpleName();
 
     private ListView mBookList;
     private BookAdapter mAdapter;
@@ -42,30 +43,32 @@ public class BookListActivity extends AppCompatActivity {
 
     private void fetchBooks(String query) {
         mProgressBar.setVisibility(ProgressBar.VISIBLE);
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(BookClient.BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
 
-        mClient = new BookClient();
-        mClient.getBooks(query, new JsonHttpResponseHandler() {
+        mClient = retrofit.create(BookClient.class);
+        Call<BookSearchResponse> call = mClient.getAllBooks(query);
+        call.enqueue(new Callback<BookSearchResponse>() {
             @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                try {
-                    JSONArray docs = null;
-                    if (response != null) {
-                        docs = response.getJSONArray("docs");
-                        final ArrayList<Book> books = Book.fromJson(docs);
-                        mAdapter.clear();
-                        for (Book book : books) {
-                            mAdapter.add(book);
-                        }
-                        mAdapter.notifyDataSetChanged();
-                        mProgressBar.setVisibility(ProgressBar.GONE);
+            public void onResponse(Call<BookSearchResponse> call, Response<BookSearchResponse> response) {
+                Log.d(TAG, "The full URL: " + response.toString());
+                BookSearchResponse bookSearchResponse = response.body();
+                if (response.isSuccessful()) {
+                    mAdapter.clear();
+                    List<Book> books = bookSearchResponse.getBooks();
+                    for (Book book : books) {
+                        mAdapter.add(book);
                     }
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                    mAdapter.notifyDataSetChanged();
+                    mProgressBar.setVisibility(ProgressBar.GONE);
                 }
             }
 
             @Override
-            public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
+            public void onFailure(Call<BookSearchResponse> call, Throwable t) {
+                Log.d(TAG, "onFailure: The call object's toString():" + call.request().toString());
                 mProgressBar.setVisibility(ProgressBar.GONE);
             }
         });

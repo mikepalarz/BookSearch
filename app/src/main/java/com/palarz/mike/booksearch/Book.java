@@ -2,6 +2,8 @@ package com.palarz.mike.booksearch;
 
 import android.text.TextUtils;
 
+import com.google.gson.annotations.SerializedName;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -14,16 +16,23 @@ import java.util.ArrayList;
 
 public class Book {
 
+    @SerializedName("cover_edition_key")
     private String openLibraryId;
-    private String author;
+
+    @SerializedName("author_name")
+    private String [] authors;
+
+    @SerializedName("title_suggest")
     private String title;
+
+    private String authorDisplay;
 
     public String getOpenLibraryId() {
         return openLibraryId;
     }
 
-    public String getAuthor() {
-        return author;
+    public String [] getAuthors() {
+        return authors;
     }
 
     public String getTitle() {
@@ -45,6 +54,24 @@ public class Book {
         return "http://covers.openlibrary.org/b/olid/" + openLibraryId + "-L.jpg?default=false";
     }
 
+    public String getAuthorDisplay() {
+        return authorDisplay;
+    }
+
+    public Book() {
+        this.openLibraryId = "";
+        this.title = "";
+        this.authors = new String[] {};
+        this.authorDisplay = "";
+    }
+
+    public Book(String openLibraryId, String title, String[] authors, String authorDisplay) {
+        this.openLibraryId = openLibraryId;
+        this.title = title;
+        this.authors = authors;
+        authorDisplay = TextUtils.join(", ", this.authors);
+    }
+
     public static Book fromJson(JSONObject jsonObject) {
         Book book = new Book();
         try {
@@ -57,7 +84,7 @@ public class Book {
                 book.openLibraryId = ids.getString(0);
             }
             book.title = jsonObject.has("title_suggest") ? jsonObject.getString("title_suggest") : "";
-            book.author = getAuthor(jsonObject);
+//            book.authors = getAuthor(jsonObject);
         } catch (JSONException e) {
             e.printStackTrace();
             return null;

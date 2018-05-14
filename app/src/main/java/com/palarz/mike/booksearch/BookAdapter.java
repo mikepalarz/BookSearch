@@ -33,7 +33,6 @@ public class BookAdapter extends ArrayAdapter<Book> {
 
     @Override
     public View getView(int position, @Nullable View convertView, ViewGroup parent) {
-        // return super.getView(position, convertView, parent);
         final Book currentBook = getItem(position);
         ViewHolder viewHolder;
         // We'll first check if an existing view is being reused. If not, then we will inflate the view
@@ -51,7 +50,7 @@ public class BookAdapter extends ArrayAdapter<Book> {
 
         // Finally, we populate the data into the list item using our Book object
         viewHolder.title.setText(currentBook.getTitle());
-        viewHolder.author.setText(currentBook.getAuthor());
+        viewHolder.author.setText(currentBook.getAuthorDisplay());
         Picasso.with(getContext())
                 .load(Uri.parse(currentBook.getCoverUrl()))
                 .error(R.drawable.ic_no_cover)
