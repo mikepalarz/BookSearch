@@ -10,14 +10,21 @@ import android.widget.ListView;
 import android.support.v7.widget.SearchView;
 import android.widget.ProgressBar;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.http.HTTP;
 
 public class BookListActivity extends AppCompatActivity {
 
@@ -49,25 +56,40 @@ public class BookListActivity extends AppCompatActivity {
                 .build();
 
         mClient = retrofit.create(BookClient.class);
-        Call<BookSearchResponse> call = mClient.getAllBooks(query);
-        call.enqueue(new Callback<BookSearchResponse>() {
+        Call<ResponseBody> call = mClient.getAllBooks(query);
+        call.enqueue(new Callback<ResponseBody>() {
             @Override
-            public void onResponse(Call<BookSearchResponse> call, Response<BookSearchResponse> response) {
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 Log.d(TAG, "The full URL: " + response.toString());
-                BookSearchResponse bookSearchResponse = response.body();
-                if (response.isSuccessful()) {
-                    mAdapter.clear();
-                    List<Book> books = bookSearchResponse.getBooks();
-                    for (Book book : books) {
-                        mAdapter.add(book);
+                try {
+                    if (response != null) {
+                        /*
+                        response.body().string() returns the contents of the body of the HTTP
+                        response, encoded with the default character set. In other words,
+                        this returns us the entire contents of the JSON data.
+                         */
+                        JSONObject jsonRoot = new JSONObject(response.body().string());
+
+                        // We then parse through the JSON data and add the books to the adapter
+                        JSONArray docs = jsonRoot.getJSONArray("docs");
+                        ArrayList<Book> books = Book.fromJson(docs);
+                        mAdapter.clear();
+                        for (Book book : books) {
+                            mAdapter.add(book);
+                        }
+                        mAdapter.notifyDataSetChanged();
+                        mProgressBar.setVisibility(ProgressBar.GONE);
                     }
-                    mAdapter.notifyDataSetChanged();
-                    mProgressBar.setVisibility(ProgressBar.GONE);
+                    
+                } catch (IOException exception) {
+                    exception.printStackTrace();
+                } catch (JSONException exception) {
+                    exception.printStackTrace();
                 }
             }
 
             @Override
-            public void onFailure(Call<BookSearchResponse> call, Throwable t) {
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
                 Log.d(TAG, "onFailure: The call object's toString():" + call.request().toString());
                 mProgressBar.setVisibility(ProgressBar.GONE);
             }

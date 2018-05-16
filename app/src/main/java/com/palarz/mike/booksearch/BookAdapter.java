@@ -50,7 +50,7 @@ public class BookAdapter extends ArrayAdapter<Book> {
 
         // Finally, we populate the data into the list item using our Book object
         viewHolder.title.setText(currentBook.getTitle());
-        viewHolder.author.setText(currentBook.getAuthorDisplay());
+        viewHolder.author.setText(currentBook.getAuthor());
         Picasso.with(getContext())
                 .load(Uri.parse(currentBook.getCoverUrl()))
                 .error(R.drawable.ic_no_cover)

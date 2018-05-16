@@ -16,23 +16,18 @@ import java.util.ArrayList;
 
 public class Book {
 
-    @SerializedName("cover_edition_key")
     private String openLibraryId;
 
-    @SerializedName("author_name")
-    private String [] authors;
+    private String author;
 
-    @SerializedName("title_suggest")
     private String title;
-
-    private String authorDisplay;
 
     public String getOpenLibraryId() {
         return openLibraryId;
     }
 
-    public String [] getAuthors() {
-        return authors;
+    public String getAuthor() {
+        return author;
     }
 
     public String getTitle() {
@@ -54,22 +49,16 @@ public class Book {
         return "http://covers.openlibrary.org/b/olid/" + openLibraryId + "-L.jpg?default=false";
     }
 
-    public String getAuthorDisplay() {
-        return authorDisplay;
-    }
-
     public Book() {
         this.openLibraryId = "";
         this.title = "";
-        this.authors = new String[] {};
-        this.authorDisplay = "";
+        this.author = "";
     }
 
-    public Book(String openLibraryId, String title, String[] authors, String authorDisplay) {
+    public Book(String openLibraryId, String title, String author, String authorDisplay) {
         this.openLibraryId = openLibraryId;
         this.title = title;
-        this.authors = authors;
-        authorDisplay = TextUtils.join(", ", this.authors);
+        this.author = author;
     }
 
     public static Book fromJson(JSONObject jsonObject) {
@@ -84,7 +73,7 @@ public class Book {
                 book.openLibraryId = ids.getString(0);
             }
             book.title = jsonObject.has("title_suggest") ? jsonObject.getString("title_suggest") : "";
-//            book.authors = getAuthor(jsonObject);
+            book.author = getAuthor(jsonObject);
         } catch (JSONException e) {
             e.printStackTrace();
             return null;
