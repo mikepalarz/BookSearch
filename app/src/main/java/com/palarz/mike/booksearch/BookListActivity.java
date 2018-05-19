@@ -80,7 +80,7 @@ public class BookListActivity extends AppCompatActivity {
                         mAdapter.notifyDataSetChanged();
                         mProgressBar.setVisibility(ProgressBar.GONE);
                     }
-                    
+
                 } catch (IOException exception) {
                     exception.printStackTrace();
                 } catch (JSONException exception) {
